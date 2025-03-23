@@ -17,6 +17,8 @@
 
 // No código não existe cobertura para cenários clang-tidy, as funções scanf não garantem a conversão de tipos
 
+void showIterationValues(const int i, const float *ptrInterval, const float *ptrResults);
+
 // Função genérica para alocar espaços de memória para tipos float
 void alocFloats(float **p, const int size){
     if ((*p = (float*) realloc(*p, size*sizeof(float)))==NULL){
@@ -119,10 +121,10 @@ void validateFunction(
 
     // Caso os valores sejam inválidos para a função, o código termina aqui
     if (resultForA*resultForB > 0) {
-        printf("\nDicotomia invalida para o intervalo.");
+        printf("\nDicotomia invalida para o intervalo.\n");
         exit(0);
     } else {
-        printf("\nDicotomia validada para o intervalo passado.");
+        printf("\nDicotomia validada para o intervalo passado.\n");
     }
 }
 
@@ -176,7 +178,8 @@ void dichotomyIteration(
     const int *ptrPowerNumbers,
     const float *ptrBaseNumbers,
     const int functionDegree,
-    float *ptrResults
+    float *ptrResults,
+    const int iteration
 ) {
     // Calcula-se o ponto médio com base nos intervalos
     const float a = *ptrInterval;
@@ -188,15 +191,9 @@ void dichotomyIteration(
 
     // São calculados e atualizados os valores de f(A), f(B), f(M)
     calculateValues(ptrInterval, ptrPowerNumbers, ptrBaseNumbers, functionDegree, ptrResults);
-    const float aResult = *ptrResults;
-    const float mPointResult = *(ptrResults+2);
 
-    // São atualizados os valores de referência do intervalo com base nos resultados
-    if (aResult*mPointResult < 0) {
-        *(ptrInterval+1) = mPointValue;
-    } else {
-        *ptrInterval = mPointValue;
-    }
+    // Mostra os valores pós-iteração
+    showIterationValues(iteration, ptrInterval, ptrResults);
 }
 
 // Função utilizada para mostrar os valores a cada iteração
@@ -208,7 +205,7 @@ void showIterationValues(const int i, const float *ptrInterval, const float *ptr
     const float bResult = *(ptrResults+1);
     const float mPointResult = *(ptrResults+2);
 
-    // Mostra os resultados a iteraçao
+    // Mostra os resultados da iteração
     printf("\n\nITERATION %d\n", i);
     printf("A: %.4f | ", a);
     printf("B: %.4f | ", b);
@@ -221,7 +218,8 @@ void showIterationValues(const int i, const float *ptrInterval, const float *ptr
     printf("f(A)*f(M): %.4f | ", aResult*mPointResult);
     printf("f(B)*f(M): %.4f | ", bResult*mPointResult);
 
-    printf("B-A: %.4f", b - a);
+    printf("B-A: %.4f | ", b - a);
+    printf("mod f(M): %.4f", fabsf(mPointResult));
 }
 
 void main() {
@@ -264,11 +262,46 @@ void main() {
     // Calcula o valor de K
     const double kValue = calculateKValue(ptrInterval, errorMargin);
 
-    for (int i=1; i<=kValue; i++) {
+    for (int iteration=1; iteration<=kValue; iteration++) {
         // Implementação da dicotomia
-        dichotomyIteration(ptrInterval, ptrPowerNumbers, ptrBaseNumbers, functionDegree, ptrResults);
-        // Mostra os valores pós-iteração
-        showIterationValues(i, ptrInterval, ptrResults);
+        dichotomyIteration(ptrInterval, ptrPowerNumbers, ptrBaseNumbers, functionDegree, ptrResults, iteration);
+
+        const float aResult = *ptrResults;
+        const float mPointResult = *(ptrResults+2);
+        const float a = *ptrInterval;
+        const float b = *(ptrInterval+1);
+        const float mPointValue = (a+b)/2;
+
+        // São atualizados os valores de referência do intervalo com base nos resultados
+        if (aResult*mPointResult < 0) {
+            *(ptrInterval+1) = mPointValue;
+        } else {
+            *ptrInterval = mPointValue;
+        }
+    }
+
+    int iteration = (int) kValue;
+
+    while (
+        fabsf(*(ptrResults+2)) >= *errorMargin &&
+        *(ptrInterval+1)-*ptrInterval >= *errorMargin)
+    {
+        // Implementação da dicotomia
+        iteration++;
+        dichotomyIteration(ptrInterval, ptrPowerNumbers, ptrBaseNumbers, functionDegree, ptrResults, iteration);
+
+        const float aResult = *ptrResults;
+        const float mPointResult = *(ptrResults+2);
+        const float a = *ptrInterval;
+        const float b = *(ptrInterval+1);
+        const float mPointValue = (a+b)/2;
+
+        // São atualizados os valores de referência do intervalo com base nos resultados
+        if (aResult*mPointResult < 0) {
+            *(ptrInterval+1) = mPointValue;
+        } else {
+            *ptrInterval = mPointValue;
+        }
     }
 
     printf("\n\nValor de x para a raiz da funcao: %.4f\n", *(ptrInterval+2));
