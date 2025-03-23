@@ -222,6 +222,27 @@ void showIterationValues(const int i, const float *ptrInterval, const float *ptr
     printf("mod f(M): %.4f", fabsf(mPointResult));
 }
 
+// Função utilizada para atualizar os valores de intervalo com base nos resultados da dicotomia
+// Se f(A)*f(M) < 0 então B = M
+// Se f(B)*f(M) < 0 então A = M
+void updateIntervalValues(
+    const float *ptrResults,
+    float *ptrInterval
+) {
+    const float aResult = *ptrResults;
+    const float mPointResult = *(ptrResults+2);
+    const float a = *ptrInterval;
+    const float b = *(ptrInterval+1);
+    const float mPointValue = (a+b)/2;
+
+    // São atualizados os valores de referência do intervalo com base nos resultados
+    if (aResult*mPointResult < 0) {
+        *(ptrInterval+1) = mPointValue;
+    } else {
+        *ptrInterval = mPointValue;
+    }
+}
+
 void main() {
     int functionDegree = 0;
     float *ptrBaseNumbers = NULL;
@@ -266,22 +287,17 @@ void main() {
         // Implementação da dicotomia
         dichotomyIteration(ptrInterval, ptrPowerNumbers, ptrBaseNumbers, functionDegree, ptrResults, iteration);
 
-        const float aResult = *ptrResults;
-        const float mPointResult = *(ptrResults+2);
-        const float a = *ptrInterval;
-        const float b = *(ptrInterval+1);
-        const float mPointValue = (a+b)/2;
-
         // São atualizados os valores de referência do intervalo com base nos resultados
-        if (aResult*mPointResult < 0) {
-            *(ptrInterval+1) = mPointValue;
-        } else {
-            *ptrInterval = mPointValue;
-        }
+        updateIntervalValues(ptrResults, ptrInterval);
     }
 
     int iteration = (int) kValue;
 
+    // Caso após as iterações calculados com base em K os critérios de parada ainda não tenha sido atingidos
+    // a dicotomia continua
+    // Entende-se por critérios de parada:
+    //      f(M) < margem de erro
+    //      (b-a) < margem erro
     while (
         fabsf(*(ptrResults+2)) >= *errorMargin &&
         *(ptrInterval+1)-*ptrInterval >= *errorMargin)
@@ -290,18 +306,8 @@ void main() {
         iteration++;
         dichotomyIteration(ptrInterval, ptrPowerNumbers, ptrBaseNumbers, functionDegree, ptrResults, iteration);
 
-        const float aResult = *ptrResults;
-        const float mPointResult = *(ptrResults+2);
-        const float a = *ptrInterval;
-        const float b = *(ptrInterval+1);
-        const float mPointValue = (a+b)/2;
-
         // São atualizados os valores de referência do intervalo com base nos resultados
-        if (aResult*mPointResult < 0) {
-            *(ptrInterval+1) = mPointValue;
-        } else {
-            *ptrInterval = mPointValue;
-        }
+        updateIntervalValues(ptrResults, ptrInterval);
     }
 
     printf("\n\nValor de x para a raiz da funcao: %.4f\n", *(ptrInterval+2));
