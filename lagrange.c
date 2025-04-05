@@ -14,8 +14,8 @@
 
 // Estrutura criada para suportar o conjunto de pontos conhecidos da função
 typedef struct {
-    float x;
-    float y;
+    double x;
+    double y;
 } knownPoints;
 
 void alocKnownPoints(knownPoints **ptr, int size);
@@ -23,6 +23,9 @@ void alocInts(int **ptr, int size);
 void alocFloats(float **ptr, int size);
 void storeDegree(int *ptr);
 void storeXValue(float *ptr);
+void storeKnownPoints(knownPoints *ptr, int knownPointsAmount);
+void chartKnownPoints(const knownPoints *ptr, int knownPointsAmount);
+void cleanConsoleOutput();
 
 void main() {
     knownPoints *ptrKnowPoints = NULL;
@@ -48,10 +51,24 @@ void main() {
     // Armazena no ponteiro os valores tabelados
     storeKnownPoints(ptrKnowPoints, knowPointsAmount);
 
+    cleanConsoleOutput();
+
+    chartKnownPoints(ptrKnowPoints, knowPointsAmount);
+
+    printf("\nGrau do polinômio: %d", *polynomialDegree);
     printf("\nQuantidade de pontos conhecidos: %d", knowPointsAmount);
     printf("\nValor de X alvo: %.2f", *xValue);
 
     exit(0);
+}
+
+void cleanConsoleOutput() {
+    // Limpa a tela
+    #ifdef _WIN32
+        system("cls");  // Windows
+    #else
+        system("clear");  // Linux/macOS
+    #endif
 }
 
 // Função para alocar espaços de memória para o tipo das struct knowPoints
@@ -90,6 +107,21 @@ void storeXValue(float *ptr) {
     scanf("%f", ptr);
 }
 
-void storeKnownPoints() {
-    
+void storeKnownPoints(knownPoints *ptr, const int knownPointsAmount) {
+    for (int i = 0; i < knownPointsAmount; i++) {
+        printf("\nDigite o valor de X_%d: ", i);
+        scanf("%lf", &(ptr+i)->x);
+        printf("\nDigite o valor de f(x_%d): ", i);
+        scanf("%lf", &(ptr+i)->y);
+    }
+}
+
+void chartKnownPoints(const knownPoints *ptr, const int knownPointsAmount) {
+    printf("\n");
+    printf("| %-2s | %-8s | %-8s |\n", "i", "x", "f(x)");
+    printf("+----+----------+----------+\n");
+    for (int i = 0; i < knownPointsAmount; i++) {
+        printf("| %-2d | %-8.5lf | %-8.5lf |", i, (ptr+i)->x, (ptr+i)->y);
+        printf("\n");
+    }
 }
