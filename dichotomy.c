@@ -15,6 +15,15 @@
 #define INTERVAL_SIZE 2
 #define EQUATION_TERMS 3
 
+// Códigos de saída para a função exit()
+// 0 > sucesso
+// 1 > erro genérico
+// 2 > argumento inválido
+// 3 > falha lógica
+#define EXIT_SUCESS 0
+#define UNDEFINED_ERROR 1
+#define INVALID_ARGUMENT_ERROR 2
+
 // No código não existe cobertura para cenários clang-tidy, as funções scanf não garantem a conversão de tipos
 
 void showIterationValues(int i, const float *ptrInterval, const float *ptrResults);
@@ -119,7 +128,7 @@ void main() {
     }
 
     printf("\n\nValor de x para a raiz da funcao: %.4f\n", *(ptrInterval+2));
-    exit(0);
+    exit(EXIT_SUCESS);
 }
 
 // Função usada para receber o grau da função
@@ -137,8 +146,8 @@ int receiveFunctioDegree() {
 // Função genérica para alocar espaços de memória para tipos int
 void alocInts(int **p, const int size) {
     if ((*p = (int*) malloc(size*sizeof(int)))==NULL) {
-        printf("\nErro de alocacao.");
-        exit(1);
+        fprintf(stderr, "\nERRO: Erro ao alocar intervalo de memória.");
+        exit(UNDEFINED_ERROR);
     }
 }
 
@@ -152,8 +161,8 @@ void storePowerNumbers(int *p, const int functionDegree) {
 // Função genérica para alocar espaços de memória para tipos float
 void alocFloats(float **p, const int size){
     if ((*p = (float*) malloc(size*sizeof(float)))==NULL){
-        printf("\nErro de alocacao.");
-        exit(1);
+        fprintf(stderr, "\nERRO: Erro ao alocar intervalo de memória.");
+        exit(UNDEFINED_ERROR);
     }
 }
 
@@ -224,8 +233,8 @@ void validateFunction(
 
     // Caso os valores sejam inválidos para a função, o código termina aqui
     if (resultForA*resultForB > 0) {
-        printf("\nDicotomia invalida para o intervalo.\n");
-        exit(1);
+        fprintf(stderr, "\nERRO: Dicotomia invalida para o intervalo.\n");
+        exit(INVALID_ARGUMENT_ERROR);
     } else {
         printf("\nDicotomia validada para o intervalo passado.\n");
     }
