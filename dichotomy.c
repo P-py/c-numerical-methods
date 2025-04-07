@@ -136,9 +136,9 @@ int receiveFunctioDegree() {
 
 // Função genérica para alocar espaços de memória para tipos int
 void alocInts(int **p, const int size) {
-    if ((*p = (int*) realloc(*p, size*sizeof(int)))==NULL) {
+    if ((*p = (int*) malloc(size*sizeof(int)))==NULL) {
         printf("\nErro de alocacao.");
-        exit(0);
+        exit(1);
     }
 }
 
@@ -151,9 +151,9 @@ void storePowerNumbers(int *p, const int functionDegree) {
 
 // Função genérica para alocar espaços de memória para tipos float
 void alocFloats(float **p, const int size){
-    if ((*p = (float*) realloc(*p, size*sizeof(float)))==NULL){
+    if ((*p = (float*) malloc(size*sizeof(float)))==NULL){
         printf("\nErro de alocacao.");
-        exit(0);
+        exit(1);
     }
 }
 
@@ -225,7 +225,7 @@ void validateFunction(
     // Caso os valores sejam inválidos para a função, o código termina aqui
     if (resultForA*resultForB > 0) {
         printf("\nDicotomia invalida para o intervalo.\n");
-        exit(0);
+        exit(1);
     } else {
         printf("\nDicotomia validada para o intervalo passado.\n");
     }
