@@ -17,37 +17,109 @@
 
 // No código não existe cobertura para cenários clang-tidy, as funções scanf não garantem a conversão de tipos
 
-void showIterationValues(const int i, const float *ptrInterval, const float *ptrResults);
+void showIterationValues(int i, const float *ptrInterval, const float *ptrResults);
+void alocFloats(float **p, int size);
+void alocInts(int **p, int size);
+void storeBaseNumbers(float *p, int functionDegree);
+void storePowerNumbers(int *p, int functionDegree);
+int receiveFunctioDegree();
+void showFunction(const float *ptrBaseNumbers, const int *ptrPowerNumbers, int functionDegree);
+void storeIntervalNumbers(float *ptrInterval);
+void storeErrorMargin(float *errorMargin);
+void validateFunction(
+    const float *ptrInterval,
+    const int *ptrPowerNumbers,
+    const float *ptrBaseNumbers,
+    int functionDegree,
+    float *ptrResults
+);
+double calculateKValue(const float *ptrInterval, const float *errorMargin);
+void calculateValues(
+    const float *ptrInterval,
+    const int *ptrPowerNumbers,
+    const float *ptrBaseNumbers,
+    int functionDegree,
+    float *ptrResults
+);
+void dichotomyIteration(
+    float *ptrInterval,
+    const int *ptrPowerNumbers,
+    const float *ptrBaseNumbers,
+    int functionDegree,
+    float *ptrResults,
+    int iteration
+);
+void updateIntervalValues(const float *ptrResults, float *ptrInterval);
 
-// Função genérica para alocar espaços de memória para tipos float
-void alocFloats(float **p, const int size){
-    if ((*p = (float*) realloc(*p, size*sizeof(float)))==NULL){
-        printf("\nErro de alocacao.");
-        exit(0);
-    }
-}
+void main() {
+    int functionDegree = 0;
+    float *ptrBaseNumbers = NULL;
+    int *ptrPowerNumbers = NULL;
+    float *ptrInterval = NULL;
+    float *errorMargin = NULL;
+    float *ptrResults = NULL;
 
-// Função genérica para alocar espaços de memória para tipos int
-void alocInts(int **p, const int size) {
-    if ((*p = (int*) realloc(*p, size*sizeof(int)))==NULL) {
-        printf("\nErro de alocacao.");
-        exit(0);
-    }
-}
+    // Recebe do usuário o grau da equação por uma função
+    functionDegree = receiveFunctioDegree();
 
-// Nessa função utiliza-se o ponteiro para armazenar valores digitados pelo usuário para os termos dependentes da função
-void storeBaseNumbers(float *p, const int functionDegree) {
-    for (int i = functionDegree; i>=0; i--) {
-        printf("\nDigite o valor do termo x^%d (%c): ", i, 65+(functionDegree-i));
-        scanf("%f", p+i);
-    }
-}
+    // Aloca um ponteiro e armazena nele os valores das potências dos termos
+    alocInts(&ptrPowerNumbers, functionDegree+1);
+    storePowerNumbers(ptrPowerNumbers, functionDegree);
 
-// Utiliza-se o ponteiro int para armazenar valores digitados das potências dos termos
-void storePowerNumbers(int *p, const int functionDegree) {
-    for (int i = 0; i<functionDegree+1; i++) {
-        *(p+i) = i;
+    // Aloca um ponteiro para o valor dos termos
+    alocFloats(&ptrBaseNumbers, functionDegree+1);
+    storeBaseNumbers(ptrBaseNumbers, functionDegree);
+
+    // Mostra a função ao usuário
+    showFunction(ptrBaseNumbers, ptrPowerNumbers, functionDegree);
+
+    // Aloca e armazena os valores do intervalo digitados pelo usuário
+    alocFloats(&ptrInterval, INTERVAL_SIZE+1);
+    storeIntervalNumbers(ptrInterval);
+
+    // Criar uma função que recebe o valor do erro
+    // Aloca e armazena o valor do erro
+    alocFloats(&errorMargin, 1);
+    storeErrorMargin(errorMargin);
+
+    // Aloca o ponteiro para os resultados
+    alocFloats(&ptrResults, INTERVAL_SIZE+1);
+
+    // Valida se a dicotomia é possível
+    validateFunction(ptrInterval, ptrPowerNumbers, ptrBaseNumbers, functionDegree, ptrResults);
+
+    // Calcula o valor de K
+    const double kValue = calculateKValue(ptrInterval, errorMargin);
+
+    for (int iteration=1; iteration<=kValue; iteration++) {
+        // Implementação da dicotomia
+        dichotomyIteration(ptrInterval, ptrPowerNumbers, ptrBaseNumbers, functionDegree, ptrResults, iteration);
+
+        // São atualizados os valores de referência do intervalo com base nos resultados
+        updateIntervalValues(ptrResults, ptrInterval);
     }
+
+    int iteration = (int) kValue;
+
+    // Caso após as iterações calculados com base em K os critérios de parada ainda não tenha sido atingidos
+    // a dicotomia continua
+    // Entende-se por critérios de parada:
+    //      f(M) < margem de erro
+    //      (b-a) < margem erro
+    while (
+        fabsf(*(ptrResults+2)) >= *errorMargin &&
+        *(ptrInterval+1)-*ptrInterval >= *errorMargin)
+    {
+        // Implementação da dicotomia
+        iteration++;
+        dichotomyIteration(ptrInterval, ptrPowerNumbers, ptrBaseNumbers, functionDegree, ptrResults, iteration);
+
+        // São atualizados os valores de referência do intervalo com base nos resultados
+        updateIntervalValues(ptrResults, ptrInterval);
+    }
+
+    printf("\n\nValor de x para a raiz da funcao: %.4f\n", *(ptrInterval+2));
+    exit(0);
 }
 
 // Função usada para receber o grau da função
@@ -60,6 +132,37 @@ int receiveFunctioDegree() {
         scanf("%d", &userInput);
     } while (userInput< 2 || userInput > 6);
     return userInput;
+}
+
+// Função genérica para alocar espaços de memória para tipos int
+void alocInts(int **p, const int size) {
+    if ((*p = (int*) realloc(*p, size*sizeof(int)))==NULL) {
+        printf("\nErro de alocacao.");
+        exit(0);
+    }
+}
+
+// Utiliza-se o ponteiro int para armazenar valores digitados das potências dos termos
+void storePowerNumbers(int *p, const int functionDegree) {
+    for (int i = 0; i<functionDegree+1; i++) {
+        *(p+i) = i;
+    }
+}
+
+// Função genérica para alocar espaços de memória para tipos float
+void alocFloats(float **p, const int size){
+    if ((*p = (float*) realloc(*p, size*sizeof(float)))==NULL){
+        printf("\nErro de alocacao.");
+        exit(0);
+    }
+}
+
+// Nessa função utiliza-se o ponteiro para armazenar valores digitados pelo usuário para os termos dependentes da função
+void storeBaseNumbers(float *p, const int functionDegree) {
+    for (int i = functionDegree; i>=0; i--) {
+        printf("\nDigite o valor do termo x^%d (%c): ", i, 65+(functionDegree-i));
+        scanf("%f", p+i);
+    }
 }
 
 // Função utilizada para mostrar a equação
@@ -150,28 +253,6 @@ double calculateKValue(const float *ptrInterval, const float *errorMargin) {
     return kValue;
 }
 
-// Função genérica que calcula o valor de um ponto na função com base em um valor de X
-void calculateValues(
-    const float *ptrInterval,
-    const int *ptrPowerNumbers,
-    const float *ptrBaseNumbers,
-    const int functionDegree,
-    float *ptrResults
-) {
-    // Para cada iteração precisamos de 3 valores (A, B, M - ponto médio)
-    // Zeramos o valor do ponteiro de resultados no começo das iterações já que é utilizada soma
-    // Percorremos de forma decrescente os termos da função somando os seus valores ao resultado de cada ponto
-    for (int i = 0; i<EQUATION_TERMS; i++) {
-        *(ptrResults+i) = 0.0f;
-        for (int j=functionDegree; j>=0; j--) {
-            const float baseNumber = *(ptrBaseNumbers+j);
-            const float power = (float) *(ptrPowerNumbers+j);
-
-            *(ptrResults+i) += powf(*(ptrInterval+i), power)*baseNumber;
-        }
-    }
-}
-
 // Função que implementa iterações individuais da dicotomia
 void dichotomyIteration(
     float *ptrInterval,
@@ -194,6 +275,28 @@ void dichotomyIteration(
 
     // Mostra os valores pós-iteração
     showIterationValues(iteration, ptrInterval, ptrResults);
+}
+
+// Função genérica que calcula o valor de um ponto na função com base em um valor de X
+void calculateValues(
+    const float *ptrInterval,
+    const int *ptrPowerNumbers,
+    const float *ptrBaseNumbers,
+    const int functionDegree,
+    float *ptrResults
+) {
+    // Para cada iteração precisamos de 3 valores (A, B, M - ponto médio)
+    // Zeramos o valor do ponteiro de resultados no começo das iterações já que é utilizada soma
+    // Percorremos de forma decrescente os termos da função somando os seus valores ao resultado de cada ponto
+    for (int i = 0; i<EQUATION_TERMS; i++) {
+        *(ptrResults+i) = 0.0f;
+        for (int j=functionDegree; j>=0; j--) {
+            const float baseNumber = *(ptrBaseNumbers+j);
+            const float power = (float) *(ptrPowerNumbers+j);
+
+            *(ptrResults+i) += powf(*(ptrInterval+i), power)*baseNumber;
+        }
+    }
 }
 
 // Função utilizada para mostrar os valores a cada iteração
@@ -241,75 +344,4 @@ void updateIntervalValues(
     } else {
         *ptrInterval = mPointValue;
     }
-}
-
-void main() {
-    int functionDegree = 0;
-    float *ptrBaseNumbers = NULL;
-    int *ptrPowerNumbers = NULL;
-    float *ptrInterval = NULL;
-    float *errorMargin = NULL;
-    float *ptrResults = NULL;
-
-    // Recebe do usuário o grau da equação por uma função
-    functionDegree = receiveFunctioDegree();
-
-    // Aloca um ponteiro e armazena nele os valores das potências dos termos
-    alocInts(&ptrPowerNumbers, functionDegree+1);
-    storePowerNumbers(ptrPowerNumbers, functionDegree);
-
-    // Aloca um ponteiro para o valor dos termos
-    alocFloats(&ptrBaseNumbers, functionDegree+1);
-    storeBaseNumbers(ptrBaseNumbers, functionDegree);
-
-    // Mostra a função ao usuário
-    showFunction(ptrBaseNumbers, ptrPowerNumbers, functionDegree);
-
-    // Aloca e armazena os valores do intervalo digitados pelo usuário
-    alocFloats(&ptrInterval, 3);
-    storeIntervalNumbers(ptrInterval);
-
-    // Criar uma função que recebe o valor do erro
-    // Aloca e armazena o valor do erro
-    alocFloats(&errorMargin, 1);
-    storeErrorMargin(errorMargin);
-
-    // Aloca o ponteiro para os resultados
-    alocFloats(&ptrResults, 3);
-
-    // Valida se a dicotomia é possível
-    validateFunction(ptrInterval, ptrPowerNumbers, ptrBaseNumbers, functionDegree, ptrResults);
-
-    // Calcula o valor de K
-    const double kValue = calculateKValue(ptrInterval, errorMargin);
-
-    for (int iteration=1; iteration<=kValue; iteration++) {
-        // Implementação da dicotomia
-        dichotomyIteration(ptrInterval, ptrPowerNumbers, ptrBaseNumbers, functionDegree, ptrResults, iteration);
-
-        // São atualizados os valores de referência do intervalo com base nos resultados
-        updateIntervalValues(ptrResults, ptrInterval);
-    }
-
-    int iteration = (int) kValue;
-
-    // Caso após as iterações calculados com base em K os critérios de parada ainda não tenha sido atingidos
-    // a dicotomia continua
-    // Entende-se por critérios de parada:
-    //      f(M) < margem de erro
-    //      (b-a) < margem erro
-    while (
-        fabsf(*(ptrResults+2)) >= *errorMargin &&
-        *(ptrInterval+1)-*ptrInterval >= *errorMargin)
-    {
-        // Implementação da dicotomia
-        iteration++;
-        dichotomyIteration(ptrInterval, ptrPowerNumbers, ptrBaseNumbers, functionDegree, ptrResults, iteration);
-
-        // São atualizados os valores de referência do intervalo com base nos resultados
-        updateIntervalValues(ptrResults, ptrInterval);
-    }
-
-    printf("\n\nValor de x para a raiz da funcao: %.4f\n", *(ptrInterval+2));
-    exit(0);
 }
