@@ -75,19 +75,23 @@ void main() {
 
     calculateLagrangePolynomials(*xValue, polynomialDegree, ptrKnowPoints, polynomialsResults);
 
-    for (int i = 0; i < knowPointsAmount; i++) {
-        printf("\nValor de L_%d: %.2lf", i, polynomialsResults[i]);
-    }
-
     int userInput = 0;
     do {
+        calculateLagrangePolynomials(*xValue, polynomialDegree, ptrKnowPoints, polynomialsResults);
+        for (int i = 0; i < knowPointsAmount; i++) {
+            printf("\nValor de L_%d: %.2lf", i, polynomialsResults[i]);
+        }
         const double result = calculateResult(polynomialDegree, ptrKnowPoints, polynomialsResults);
-        printf("\n\nValor de f(x) para x = %.2lf: %.5lf", *xValue, result);
+        printf("\n\nValor de f(x) para x = %.5lf: %.5lf", *xValue, result);
         printf("\n\nDeseja continuar?");
         printf("\n1. Sim");
         printf("\n2. Nao");
         printf("\n->");
         scanf("%d", &userInput);
+        if (userInput == 1) {
+            printf("\nDigite o novo valor de x para o qual quer calcular f(x): ");
+            scanf("%lf", xValue);
+        }
     }while (userInput != 2);
 
     exit(0);
