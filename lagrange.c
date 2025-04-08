@@ -30,9 +30,9 @@ typedef struct {
 
 // Definição dos protótipos de funções utilizadas dentro da main
 // A necessidade da declaração a aqui se dá para evitar que seja necessário definir as funções completas antes da main
-void alocKnownPoints(KnownPoint **ptr, int size);
-void alocInts(int **ptr, int size);
-void alocDoubles(double **ptr, int size);
+void allocKnownPoints(KnownPoint **ptr, int size);
+void allocInts(int **ptr, int size);
+void allocDoubles(double **ptr, int size);
 void storeDegree(int *ptr);
 void storeXValue(double *ptr);
 void storeKnownPoints(KnownPoint *ptr, int knownPointsAmount);
@@ -60,19 +60,19 @@ int main(void) {
 
     // O primeiro passo que é executado aqui é a determinação do grau do polinômio que deve ser calculado
     // A primeira função aloca o espaço de memória que será utilizado pelo ponteiro
-    alocInts(&polynomialDegree, 1);
+    allocInts(&polynomialDegree, 1);
     // Armazena no ponteiro e na variável o valor do grau do polinômio e quantidade de pontos
     storeDegree(polynomialDegree);
     knowPointsAmount = *polynomialDegree + 1;
 
     // O segundo passo é armazenar em um ponteiro (xValue) o valor de X que se quer obter através do polinômio
-    alocDoubles(&xValue, knowPointsAmount);
+    allocDoubles(&xValue, knowPointsAmount);
     // Armazena no ponteiro o último valor de X que o usuário digitou
     storeXValue(xValue);
 
     // Para o terceiro passo é necessário alocar e armazenar em um ponteiro os valores conhecidos/tabelados
     // Para isso utilizamos um struct e um ponteiro dessa struct
-    alocKnownPoints(&ptrKnownPoints, knowPointsAmount);
+    allocKnownPoints(&ptrKnownPoints, knowPointsAmount);
     // Armazena no ponteiro os valores tabelados
     storeKnownPoints(ptrKnownPoints, knowPointsAmount);
 
@@ -84,7 +84,7 @@ int main(void) {
     printf("\nQuantidade de pontos conhecidos: %d", knowPointsAmount);
     printf("\nValor de X alvo: %.2f", *xValue);
 
-    alocDoubles(&polynomialsResults, *polynomialDegree);
+    allocDoubles(&polynomialsResults, *polynomialDegree);
 
     calculateLagrangePolynomials(*xValue, polynomialDegree, ptrKnownPoints, polynomialsResults);
 

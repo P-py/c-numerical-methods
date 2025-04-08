@@ -27,11 +27,11 @@
 // No código não existe cobertura para cenários clang-tidy, as funções scanf não garantem a conversão de tipos
 
 void showIterationValues(int i, const float *ptrInterval, const float *ptrResults);
-void alocFloats(float **p, int size);
-void alocInts(int **p, int size);
+void allocFloats(float **p, int size);
+void allocInts(int **p, int size);
 void storeBaseNumbers(float *p, int functionDegree);
 void storePowerNumbers(int *p, int functionDegree);
-int receiveFunctioDegree();
+int receiveFunctionDegree();
 void showFunction(const float *ptrBaseNumbers, const int *ptrPowerNumbers, int functionDegree);
 void storeIntervalNumbers(float *ptrInterval);
 void storeErrorMargin(float *errorMargin);
@@ -69,30 +69,30 @@ int main() {
     float *ptrResults = NULL;
 
     // Recebe do usuário o grau da equação por uma função
-    functionDegree = receiveFunctioDegree();
+    functionDegree = receiveFunctionDegree();
 
     // Aloca um ponteiro e armazena nele os valores das potências dos termos
-    alocInts(&ptrPowerNumbers, functionDegree+1);
+    allocInts(&ptrPowerNumbers, functionDegree+1);
     storePowerNumbers(ptrPowerNumbers, functionDegree);
 
     // Aloca um ponteiro para o valor dos termos
-    alocFloats(&ptrBaseNumbers, functionDegree+1);
+    allocFloats(&ptrBaseNumbers, functionDegree+1);
     storeBaseNumbers(ptrBaseNumbers, functionDegree);
 
     // Mostra a função ao usuário
     showFunction(ptrBaseNumbers, ptrPowerNumbers, functionDegree);
 
     // Aloca e armazena os valores do intervalo digitados pelo usuário
-    alocFloats(&ptrInterval, INTERVAL_SIZE+1);
+    allocFloats(&ptrInterval, INTERVAL_SIZE+1);
     storeIntervalNumbers(ptrInterval);
 
     // Criar uma função que recebe o valor do erro
     // Aloca e armazena o valor do erro
-    alocFloats(&errorMargin, 1);
+    allocFloats(&errorMargin, 1);
     storeErrorMargin(errorMargin);
 
     // Aloca o ponteiro para os resultados
-    alocFloats(&ptrResults, INTERVAL_SIZE+1);
+    allocFloats(&ptrResults, INTERVAL_SIZE+1);
 
     // Valida se a dicotomia é possível
     validateFunction(ptrInterval, ptrPowerNumbers, ptrBaseNumbers, functionDegree, ptrResults);
@@ -136,12 +136,12 @@ int main() {
     free(errorMargin);
     free(ptrResults);
 
-    exit(EXIT_SUCESS);
+    exit(EXIT_SUCCESS);
 }
 
 // Função usada para receber o grau da função
 // Não se espera um grau maior do que 6
-int receiveFunctioDegree() {
+int receiveFunctionDegree() {
     int userInput = -1;
     // Programa não segue enquanto usuário não digitar um valor válido
     do {
@@ -152,7 +152,7 @@ int receiveFunctioDegree() {
 }
 
 // Função genérica para alocar espaços de memória para tipos int
-void alocInts(int **p, const int size) {
+void allocInts(int **p, const int size) {
     if ((*p = (int*) calloc(size, sizeof(int)))==NULL) {
         fprintf(stderr, "\nERRO: Erro ao alocar intervalo de memória.");
         exit(UNDEFINED_ERROR);
@@ -167,7 +167,7 @@ void storePowerNumbers(int *p, const int functionDegree) {
 }
 
 // Função genérica para alocar espaços de memória para tipos float
-void alocFloats(float **p, const int size){
+void allocFloats(float **p, const int size){
     if ((*p = (float*) calloc(size, sizeof(float)))==NULL){
         fprintf(stderr, "\nERRO: Erro ao alocar intervalo de memória.");
         exit(UNDEFINED_ERROR);
