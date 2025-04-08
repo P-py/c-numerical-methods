@@ -170,7 +170,7 @@ void storeXValue(double *ptr) {
 // Onde x representa x_i e y representa f(x_i)
 void storeKnownPoints(KnownPoint *ptr, const int knownPointsAmount) {
     for (int i = 0; i < knownPointsAmount; i++) {
-        // Percorremos o loop fazendo uma leitura de entrada para cada termo dos pontos
+        // Percorremos o ‘loop’ fazendo uma leitura de entrada para cada termo dos pontos
         printf("\nDigite o valor de X_%d: ", i);
         scanf("%lf", &(ptr+i)->x);
         printf("\nDigite o valor de f(x_%d): ", i);
@@ -179,7 +179,7 @@ void storeKnownPoints(KnownPoint *ptr, const int knownPointsAmount) {
 }
 
 // Função utilizada para formatar e mostrar na tela a tabela de pontos conhecidos
-// Utiliza-se formatação avançada de strings para alinhar os valores de forma simétrica
+// Utiliza-se formatação avançada de ‘strings’ para alinhar os valores de forma simétrica
 void chartKnownPoints(const KnownPoint *ptr, const int knownPointsAmount) {
     printf("\n");
     // %-2 indica que devem ser utilizados 2 espaços alinhando na esquerda o valor
@@ -200,12 +200,12 @@ void calculateLagrangePolynomials(
     const KnownPoint *ptrKnowPoints,
     double *polynomialsResults
 ) {
-    // Para cada valor do grau num loop entre 0 e o grau precisamos calular um Li
+    // Para cada valor do grau num ‘loop’ entre 0 e o grau precisamos calular um Li
     for (int i=0 ; i<=*polynomialDegree; i++) {
         double Li = 1;
-        // Para cada valor num loop entre 0 e grau precisamos somar o resultado do polinômio equivalente
-        // Isso significa que para cada valor no loop cria-se um termo da multiplicação e um da divisão do polinômio Li
-        // Para cada iteração desse loop são multiplicados com o valor final as estruturas:
+        // Para cada valor num ‘loop’ entre 0 e grau precisamos somar o resultado do polinômio equivalente
+        // Isso significa que para cada valor no ‘loop’ cria-se um termo da multiplicação e um da divisão do polinômio Li
+        // Para cada iteração desse ‘loop’ são multiplicados com o valor final as estruturas:
         // (x - x_j) / (x_i - x_j)
         for (int j=0; j<=*polynomialDegree; j++) {
             if (i!=j) {
@@ -224,7 +224,7 @@ double calculateResult(
     const double *polynomialsResults
 ) {
     double lagrangeResultForX = 0;
-    // Para cada valor do loop entre 0 e o grau do polinômio interpolador soma-se o valor da multiplicação Li*f(x)
+    // Para cada valor do ‘loop’ entre 0 e o grau do polinômio interpolador soma-se o valor da multiplicação Li*f(x)
     for (int i=0; i<=*polynomialDegree; i++) {
         const double Li = *(polynomialsResults+i);
         const double y = (ptrKnowPoints+i)->y;
