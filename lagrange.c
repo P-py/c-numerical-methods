@@ -49,6 +49,7 @@ double calculateResult(
     const KnownPoint *ptrKnowPoints,
     const double *polynomialsResults
 );
+void freeAll(int *degree, double *xValue, double *results, KnownPoint *points);
 
 int main(void) {
     KnownPoint *ptrKnownPoints = NULL;
@@ -105,6 +106,8 @@ int main(void) {
             scanf("%lf", xValue);
         }
     }while (userInput != 2);
+
+    freeAll(polynomialDegree, xValue, polynomialsResults, ptrKnownPoints);
 
     exit(EXIT_SUCCESS);
 }
@@ -202,4 +205,11 @@ double calculateResult(
         lagrangeResultForX += Li*y;
     }
     return lagrangeResultForX;
+}
+
+void freeAll(int *degree, double *xValue, double *results, KnownPoint *points) {
+    free(degree);
+    free(xValue);
+    free(results);
+    free(points);
 }
