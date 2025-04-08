@@ -86,8 +86,6 @@ int main(void) {
 
     allocDoubles(&polynomialsResults, *polynomialDegree);
 
-    calculateLagrangePolynomials(*xValue, polynomialDegree, ptrKnownPoints, polynomialsResults);
-
     int userInput = 0;
     do {
         calculateLagrangePolynomials(*xValue, polynomialDegree, ptrKnownPoints, polynomialsResults);
@@ -122,7 +120,7 @@ void cleanConsoleOutput() {
 }
 
 // Função para alocar espaços de memória para o tipo das struct knowPoints
-void alocKnownPoints(KnownPoint **ptr, const int size) {
+void allocKnownPoints(KnownPoint **ptr, const int size) {
     if ((*ptr = (KnownPoint*) realloc(*ptr, size*sizeof(KnownPoint)))==NULL) {
         printf("\nErro de alocacao.");
         exit(ALLOCATION_ERROR);
@@ -130,7 +128,7 @@ void alocKnownPoints(KnownPoint **ptr, const int size) {
 }
 
 // Função genérica para alocar espaços de memória para o tipo int
-void alocInts(int **ptr, const int size) {
+void allocInts(int **ptr, const int size) {
     if ((*ptr = (int*) realloc(*ptr, size*sizeof(int)))==NULL) {
         printf("\nErro de alocacao.");
         exit(ALLOCATION_ERROR);
@@ -138,7 +136,7 @@ void alocInts(int **ptr, const int size) {
 }
 
 // Função genérica para alocar espaços de memória para o tipo double
-void alocDoubles(double **ptr, const int size) {
+void allocDoubles(double **ptr, const int size) {
     if ((*ptr = (double*) realloc(*ptr, size*sizeof(double)))==NULL) {
         printf("\nErro de alocacao.");
         exit(ALLOCATION_ERROR);
