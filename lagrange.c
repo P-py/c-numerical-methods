@@ -76,22 +76,30 @@ int main(void) {
     // Armazena no ponteiro os valores tabelados
     storeKnownPoints(ptrKnownPoints, knowPointsAmount);
 
+    // Limpamos o histórico de saídas do console para uma melhor visualização do resultado
     cleanConsoleOutput();
 
+    // Função genérica utilizada para mostrar os pontos conhecidos com base no ponteiro da struct de pontos
     chartKnownPoints(ptrKnownPoints, knowPointsAmount);
 
     printf("\nGrau do polinômio: %d", *polynomialDegree);
     printf("\nQuantidade de pontos conhecidos: %d", knowPointsAmount);
     printf("\nValor de X alvo: %.2f", *xValue);
 
+    // São alocados espaços de memória do tipo double para armazenar os resultados calculados
     allocDoubles(&polynomialsResults, *polynomialDegree);
 
+    // Estrutura de repetição para executar o algoritmo de lagrange até que o usuário escolha sair
     int userInput = 0;
     do {
+        // Função para calcular os polinômios de lagrange Li(k)
         calculateLagrangePolynomials(*xValue, polynomialDegree, ptrKnownPoints, polynomialsResults);
         for (int i = 0; i < knowPointsAmount; i++) {
             printf("\nValor de L_%d: %.2lf", i, polynomialsResults[i]);
         }
+        // Calcula o resultado com base nos polinômios de lagrange calculados anteriormente
+        // Utiliza-se: p(x) = [Li(x0) * f(x0)] + [Li(x1) * f(x1)]
+        // Onde ptrKnownPoints serve para pegar os valores de f(x) e polynonialsResults para Li(x)
         const double result = calculateResult(polynomialDegree, ptrKnownPoints, polynomialsResults);
         printf("\n\nValor de f(x) para x = %.5lf: %.5lf", *xValue, result);
         printf("\n\nDeseja continuar?");
@@ -105,13 +113,15 @@ int main(void) {
         }
     }while (userInput != 2);
 
+    // Função para liberar todos os espaços de memória utilizados no programa via ponteiros
+    // Boa prática para evitar memory-leaks
     freeAll(polynomialDegree, xValue, polynomialsResults, ptrKnownPoints);
 
     exit(EXIT_SUCCESS);
 }
 
+// Função que utiliza diferentes comandos para limpar o registro do console com base no tipo de S.O
 void cleanConsoleOutput() {
-    // Limpa a tela
     #ifdef _WIN32
         system("cls");  // Windows
     #else
@@ -155,8 +165,12 @@ void storeXValue(double *ptr) {
     scanf("%lf", ptr);
 }
 
+// Função utilizada para armazenar em um ponteiro os valores dos pontos conhecidos
+// Com base na struct KnownPoint são necessários dois valores para cada variável
+// Onde x representa x_i e y representa f(x_i)
 void storeKnownPoints(KnownPoint *ptr, const int knownPointsAmount) {
     for (int i = 0; i < knownPointsAmount; i++) {
+        // Percorremos o loop fazendo uma leitura de entrada para cada termo dos pontos
         printf("\nDigite o valor de X_%d: ", i);
         scanf("%lf", &(ptr+i)->x);
         printf("\nDigite o valor de f(x_%d): ", i);
@@ -164,8 +178,12 @@ void storeKnownPoints(KnownPoint *ptr, const int knownPointsAmount) {
     }
 }
 
+// Função utilizada para formatar e mostrar na tela a tabela de pontos conhecidos
+// Utiliza-se formatação avançada de strings para alinhar os valores de forma simétrica
 void chartKnownPoints(const KnownPoint *ptr, const int knownPointsAmount) {
     printf("\n");
+    // %-2 indica que devem ser utilizados 2 espaços alinhando na esquerda o valor
+    // %-8 indica que devem ser utilizados 8 espaços alinhando na esquerda o valor
     printf("| %-2s | %-8s | %-8s |\n", "i", "x", "f(x)");
     printf("+----+----------+----------+\n");
     for (int i = 0; i < knownPointsAmount; i++) {
@@ -174,14 +192,21 @@ void chartKnownPoints(const KnownPoint *ptr, const int knownPointsAmount) {
     }
 }
 
+// Função utilizada para calcular os polinômios de lagrange com base no valor de X
+// Além de utilizar os pontos conhecidos da tabela
 void calculateLagrangePolynomials(
     const double xValue,
     const int *polynomialDegree,
     const KnownPoint *ptrKnowPoints,
     double *polynomialsResults
 ) {
+    // Para cada valor do grau num loop entre 0 e o grau precisamos calular um Li
     for (int i=0 ; i<=*polynomialDegree; i++) {
         double Li = 1;
+        // Para cada valor num loop entre 0 e grau precisamos somar o resultado do polinômio equivalente
+        // Isso significa que para cada valor no loop cria-se um termo da multiplicação e um da divisão do polinômio Li
+        // Para cada iteração desse loop são multiplicados com o valor final as estruturas:
+        // (x - x_j) / (x_i - x_j)
         for (int j=0; j<=*polynomialDegree; j++) {
             if (i!=j) {
                 Li *= (xValue - (ptrKnowPoints+j)->x) / ((ptrKnowPoints+i)->x - (ptrKnowPoints+j)->x);
@@ -191,12 +216,15 @@ void calculateLagrangePolynomials(
     }
 }
 
+// Agora, com os valores calculados de Li(x) e já sabendo o valor de cada f(x) para x podemos calcular o resultado
+// Para isso aplicamos a estrutura p(x) = [Li(x0) * f(x0)] + [Li(x1) * f(x1)] até o valor do grau do polinômio
 double calculateResult(
     const int *polynomialDegree,
     const KnownPoint *ptrKnowPoints,
     const double *polynomialsResults
 ) {
     double lagrangeResultForX = 0;
+    // Para cada valor do loop entre 0 e o grau do polinômio interpolador soma-se o valor da multiplicação Li*f(x)
     for (int i=0; i<=*polynomialDegree; i++) {
         const double Li = *(polynomialsResults+i);
         const double y = (ptrKnowPoints+i)->y;
@@ -205,6 +233,7 @@ double calculateResult(
     return lagrangeResultForX;
 }
 
+// Função para liberar os espaços de memória utilizados
 void freeAll(int *degree, double *xValue, double *results, KnownPoint *points) {
     free(degree);
     free(xValue);
