@@ -60,7 +60,7 @@ void dichotomyIteration(
 );
 void updateIntervalValues(const float *ptrResults, float *ptrInterval);
 
-void main() {
+int main() {
     int functionDegree = 0;
     float *ptrBaseNumbers = NULL;
     int *ptrPowerNumbers = NULL;
@@ -128,6 +128,14 @@ void main() {
     }
 
     printf("\n\nValor de x para a raiz da funcao: %.4f\n", *(ptrInterval+2));
+
+    // Limpa os ponteiros usados em memória
+    free(ptrBaseNumbers);
+    free(ptrPowerNumbers);
+    free(ptrInterval);
+    free(errorMargin);
+    free(ptrResults);
+
     exit(EXIT_SUCESS);
 }
 
@@ -145,7 +153,7 @@ int receiveFunctioDegree() {
 
 // Função genérica para alocar espaços de memória para tipos int
 void alocInts(int **p, const int size) {
-    if ((*p = (int*) malloc(size*sizeof(int)))==NULL) {
+    if ((*p = (int*) calloc(size, sizeof(int)))==NULL) {
         fprintf(stderr, "\nERRO: Erro ao alocar intervalo de memória.");
         exit(UNDEFINED_ERROR);
     }
@@ -160,7 +168,7 @@ void storePowerNumbers(int *p, const int functionDegree) {
 
 // Função genérica para alocar espaços de memória para tipos float
 void alocFloats(float **p, const int size){
-    if ((*p = (float*) malloc(size*sizeof(float)))==NULL){
+    if ((*p = (float*) calloc(size, sizeof(float)))==NULL){
         fprintf(stderr, "\nERRO: Erro ao alocar intervalo de memória.");
         exit(UNDEFINED_ERROR);
     }
