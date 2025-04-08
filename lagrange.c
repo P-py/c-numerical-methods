@@ -12,34 +12,46 @@
 #include <stdlib.h>
 #include <math.h> // Biblioteca para as funções matemáticas
 
+// Códigos de saída para a função exit()
+// 0 > sucesso
+// 1 > erro genérico
+// 2 > argumento inválido
+// 3 > erro de alocação de memória
+#define EXIT_SUCCESS 0
+#define UNDEFINED_ERROR 1
+#define INVALID_ARGUMENT_ERROR 2
+#define ALLOCATION_ERROR 3
+
 // Estrutura criada para suportar o conjunto de pontos conhecidos da função
 typedef struct {
     double x;
     double y;
-} knownPoints;
+} KnownPoint;
 
-void alocKnownPoints(knownPoints **ptr, int size);
+// Definição dos protótipos de funções utilizadas dentro da main
+// A necessidade da declaração a aqui se dá para evitar que seja necessário definir as funções completas antes da main
+void alocKnownPoints(KnownPoint **ptr, int size);
 void alocInts(int **ptr, int size);
 void alocDoubles(double **ptr, int size);
 void storeDegree(int *ptr);
 void storeXValue(double *ptr);
-void storeKnownPoints(knownPoints *ptr, int knownPointsAmount);
-void chartKnownPoints(const knownPoints *ptr, int knownPointsAmount);
+void storeKnownPoints(KnownPoint *ptr, int knownPointsAmount);
+void chartKnownPoints(const KnownPoint *ptr, int knownPointsAmount);
 void cleanConsoleOutput();
 void calculateLagrangePolynomials(
     double xValue,
     const int *polynomialDegree,
-    const knownPoints *ptrKnowPoints,
+    const KnownPoint *ptrKnowPoints,
     double *polynomialsResults
 );
 double calculateResult(
     const int *polynomialDegree,
-    const knownPoints *ptrKnowPoints,
+    const KnownPoint *ptrKnowPoints,
     const double *polynomialsResults
 );
 
-void main() {
-    knownPoints *ptrKnowPoints = NULL;
+int main(void) {
+    KnownPoint *ptrKnownPoints = NULL;
     int *polynomialDegree = NULL;
     int knowPointsAmount = 0;
     double *xValue = NULL;
@@ -59,13 +71,13 @@ void main() {
 
     // Para o terceiro passo é necessário alocar e armazenar em um ponteiro os valores conhecidos/tabelados
     // Para isso utilizamos um struct e um ponteiro dessa struct
-    alocKnownPoints(&ptrKnowPoints, knowPointsAmount);
+    alocKnownPoints(&ptrKnownPoints, knowPointsAmount);
     // Armazena no ponteiro os valores tabelados
-    storeKnownPoints(ptrKnowPoints, knowPointsAmount);
+    storeKnownPoints(ptrKnownPoints, knowPointsAmount);
 
     cleanConsoleOutput();
 
-    chartKnownPoints(ptrKnowPoints, knowPointsAmount);
+    chartKnownPoints(ptrKnownPoints, knowPointsAmount);
 
     printf("\nGrau do polinômio: %d", *polynomialDegree);
     printf("\nQuantidade de pontos conhecidos: %d", knowPointsAmount);
@@ -73,15 +85,15 @@ void main() {
 
     alocDoubles(&polynomialsResults, *polynomialDegree);
 
-    calculateLagrangePolynomials(*xValue, polynomialDegree, ptrKnowPoints, polynomialsResults);
+    calculateLagrangePolynomials(*xValue, polynomialDegree, ptrKnownPoints, polynomialsResults);
 
     int userInput = 0;
     do {
-        calculateLagrangePolynomials(*xValue, polynomialDegree, ptrKnowPoints, polynomialsResults);
+        calculateLagrangePolynomials(*xValue, polynomialDegree, ptrKnownPoints, polynomialsResults);
         for (int i = 0; i < knowPointsAmount; i++) {
             printf("\nValor de L_%d: %.2lf", i, polynomialsResults[i]);
         }
-        const double result = calculateResult(polynomialDegree, ptrKnowPoints, polynomialsResults);
+        const double result = calculateResult(polynomialDegree, ptrKnownPoints, polynomialsResults);
         printf("\n\nValor de f(x) para x = %.5lf: %.5lf", *xValue, result);
         printf("\n\nDeseja continuar?");
         printf("\n1. Sim");
@@ -94,7 +106,7 @@ void main() {
         }
     }while (userInput != 2);
 
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 void cleanConsoleOutput() {
@@ -107,10 +119,10 @@ void cleanConsoleOutput() {
 }
 
 // Função para alocar espaços de memória para o tipo das struct knowPoints
-void alocKnownPoints(knownPoints **ptr, const int size) {
-    if ((*ptr = (knownPoints*) realloc(*ptr, size*sizeof(knownPoints)))==NULL) {
+void alocKnownPoints(KnownPoint **ptr, const int size) {
+    if ((*ptr = (KnownPoint*) realloc(*ptr, size*sizeof(KnownPoint)))==NULL) {
         printf("\nErro de alocacao.");
-        exit(0);
+        exit(ALLOCATION_ERROR);
     }
 }
 
@@ -118,7 +130,7 @@ void alocKnownPoints(knownPoints **ptr, const int size) {
 void alocInts(int **ptr, const int size) {
     if ((*ptr = (int*) realloc(*ptr, size*sizeof(int)))==NULL) {
         printf("\nErro de alocacao.");
-        exit(0);
+        exit(ALLOCATION_ERROR);
     }
 }
 
@@ -126,7 +138,7 @@ void alocInts(int **ptr, const int size) {
 void alocDoubles(double **ptr, const int size) {
     if ((*ptr = (double*) realloc(*ptr, size*sizeof(double)))==NULL) {
         printf("\nErro de alocacao.");
-        exit(0);
+        exit(ALLOCATION_ERROR);
     }
 }
 
@@ -142,7 +154,7 @@ void storeXValue(double *ptr) {
     scanf("%lf", ptr);
 }
 
-void storeKnownPoints(knownPoints *ptr, const int knownPointsAmount) {
+void storeKnownPoints(KnownPoint *ptr, const int knownPointsAmount) {
     for (int i = 0; i < knownPointsAmount; i++) {
         printf("\nDigite o valor de X_%d: ", i);
         scanf("%lf", &(ptr+i)->x);
@@ -151,7 +163,7 @@ void storeKnownPoints(knownPoints *ptr, const int knownPointsAmount) {
     }
 }
 
-void chartKnownPoints(const knownPoints *ptr, const int knownPointsAmount) {
+void chartKnownPoints(const KnownPoint *ptr, const int knownPointsAmount) {
     printf("\n");
     printf("| %-2s | %-8s | %-8s |\n", "i", "x", "f(x)");
     printf("+----+----------+----------+\n");
@@ -164,7 +176,7 @@ void chartKnownPoints(const knownPoints *ptr, const int knownPointsAmount) {
 void calculateLagrangePolynomials(
     const double xValue,
     const int *polynomialDegree,
-    const knownPoints *ptrKnowPoints,
+    const KnownPoint *ptrKnowPoints,
     double *polynomialsResults
 ) {
     for (int i=0 ; i<=*polynomialDegree; i++) {
@@ -180,7 +192,7 @@ void calculateLagrangePolynomials(
 
 double calculateResult(
     const int *polynomialDegree,
-    const knownPoints *ptrKnowPoints,
+    const KnownPoint *ptrKnowPoints,
     const double *polynomialsResults
 ) {
     double lagrangeResultForX = 0;

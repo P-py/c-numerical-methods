@@ -19,8 +19,8 @@
 // 0 > sucesso
 // 1 > erro genérico
 // 2 > argumento inválido
-// 3 > falha lógica
-#define EXIT_SUCESS 0
+// 3 > erro de alocação de memória
+#define EXIT_SUCCESS 0
 #define UNDEFINED_ERROR 1
 #define INVALID_ARGUMENT_ERROR 2
 
