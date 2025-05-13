@@ -4,4 +4,5 @@ project(c_numerical_methods C)
 set(CMAKE_C_STANDARD 99)
 
 add_executable(c_numerical_methods dichotomy.c
-        lagrange.c)
+        lagrange.c
+        gauss-elimination.c)
