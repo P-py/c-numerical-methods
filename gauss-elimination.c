@@ -23,25 +23,86 @@
 #define ALLOCATION_ERROR 3
 
 int getNvalue();
+void allocMatrix(double ***matrix, int n);
+void printEquationSystem(double **matrix, int n);
+void printMatrix(double **matrix, int n);
+void readUserInput(double **matrix, int n);
 
 int main(void) {
-    int n = getNvalue();
+    const int n = getNvalue();
 
-    for (int i = 0; i < n; i++) {
-        printf("|\t");
-        for (int j = 0; j < n; j++) {
-            printf("*\t");
-        }
-        printf("|\t\n");
-    }
+    double **matrix = NULL;
+    allocMatrix(&matrix, n+1);
+    readUserInput(matrix, n+1);
 
-    return 0;
+    printf("\nSistema final inserido:\n\n");
+    printMatrix(matrix, n);
+
+    return EXIT_SUCCESS;
 }
 
 int getNvalue() {
     int n;
-
-    printf("Digite o valor de N para compor a matriz (NxN): ");
-    scanf("%d", &n);
+    do {
+        printf("Digite o valor de N (ordem do sistema linear NxN): ");
+        scanf("%d", &n);
+    } while (n <= 0);
     return n;
+}
+
+void allocMatrix(double ***matrix, const int n) {
+    *matrix = (double **) realloc(*matrix, n * sizeof(double *));
+    if (*matrix == NULL) {
+        printf("Erro ao alocar linhas da matriz.\n");
+        exit(ALLOCATION_ERROR);
+    }
+
+    for (int i = 0; i < n; i++) {
+        (*matrix)[i] = (double *) calloc(n + 1, sizeof(double));
+        if ((*matrix)[i] == NULL) {
+            printf("Erro ao alocar colunas da matriz.\n");
+            exit(ALLOCATION_ERROR);
+        }
+    }
+}
+
+void printEquationSystem(double **matrix, const int n) {
+    printf("\n");
+    for (int i = 0; i < n; i++) {
+        printf("{ ");
+        for (int j = 0; j < n - 1; j++) {
+            printf("(%6.2lf * x%d)", matrix[i][j], j + 1);
+            if (j < n - 2) {
+                printf(" + ");
+            }
+        }
+        printf(" = %6.2lf", matrix[i][n - 1]); // termo independente
+        printf(" }\n");
+    }
+}
+
+void printMatrix(double **matrix, const int n) {
+    for (int i = 0; i < n; i++) {
+        printf("| ");
+        for (int j = 0; j < n; j++) {
+            printf("%6.2lf ", matrix[i][j]);
+        }
+        printf("| %6.2lf |\n", matrix[i][n]);
+    }
+    printf("\n");
+}
+
+void readUserInput(double **matrix, const int n) {
+    printf("\n### Digite os coeficientes das equações do sistema linear ###\n");
+
+    for (int i = 0; i < n; i++) {
+        printf("\nEquação %d:\n", i + 1);
+
+        for (int j = 0; j < n; j++) {
+            printEquationSystem(matrix, n);
+            // Exibe a descrição de maneira mais compacta
+            printf("\n  %s%d: ", (j == n - 1) ? "b_" : "Coeficiente de x_", j + 1);
+            scanf("%lf", &matrix[i][j]);
+        }
+    }
 }
