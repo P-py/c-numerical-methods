@@ -24,10 +24,13 @@
 
 int getNvalue();
 void allocMatrix(double ***matrix, int n);
+void allocXVector(double **vector, int n);
 void printEquationSystem(double **matrix, int n);
 void printMatrix(double **matrix, int n);
 void readUserInput(double **matrix, int n);
 void gaussElimination(double **matrix, int n);
+void solveScalableLinearSystem(double **matrix, double *xVector, int n);
+void printXVector(const double *xVector, int n);
 
 int main(void) {
     const int n = getNvalue();
@@ -36,12 +39,20 @@ int main(void) {
     allocMatrix(&matrix, n);
     readUserInput(matrix, n);
 
+    double *vector = NULL;
+    allocXVector(&vector, n);
+
     printf("\nMatriz aumentada:\n\n");
     printMatrix(matrix, n);
 
     gaussElimination(matrix, n);
     printf("\nMatriz depois da eliminacao de gauss:\n");
     printMatrix(matrix, n);
+
+    printEquationSystem(matrix, n);
+
+    solveScalableLinearSystem(matrix, vector, n);
+    printXVector(vector, n);
 
     return EXIT_SUCCESS;
 }
@@ -68,6 +79,14 @@ void allocMatrix(double ***matrix, const int n) {
             printf("Erro ao alocar colunas da matriz.\n");
             exit(ALLOCATION_ERROR);
         }
+    }
+}
+
+void allocXVector(double **vector, const int n) {
+    *vector = (double *) realloc(*vector, n * sizeof(double));
+    if (*vector == NULL) {
+      printf("Erro ao alocar o vetor de resultados X.\n");
+      exit(ALLOCATION_ERROR);
     }
 }
 
@@ -164,5 +183,27 @@ void gaussElimination(double **matrix, const int n) {
                 matrix[i-1][j-1] = newValue;
             }
         }
+    }
+}
+
+void solveScalableLinearSystem(double **matrix, double *xVector, const int n) {
+    for (int i = n - 1; i >= 0; i--) {
+        // Inicia-se igualando o valor do vetor X para o termo independente
+        xVector[i] = matrix[i][n];
+
+        // Para cada valor das equações, subtrai aqueles cujos termos independentes
+        // já foram resolvidos
+        for (int j = i+1; j < n; j++) {
+            xVector[i] -= matrix[i][j] * xVector[j];
+        }
+
+        // Divide pelo coeficiente da incógnita atual
+        xVector[i] = xVector[i] / matrix[i][i];
+    }
+}
+
+void printXVector(const double *xVector, const int n) {
+    for (int i = 0; i < n; i++) {
+        printf("\n( %6.3lf )", xVector[i]);
     }
 }
