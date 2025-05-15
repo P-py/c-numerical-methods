@@ -32,10 +32,10 @@ int main(void) {
     const int n = getNvalue();
 
     double **matrix = NULL;
-    allocMatrix(&matrix, n+1);
-    readUserInput(matrix, n+1);
+    allocMatrix(&matrix, n);
+    readUserInput(matrix, n);
 
-    printf("\nSistema final inserido:\n\n");
+    printf("\nMatriz aumentada:\n\n");
     printMatrix(matrix, n);
 
     return EXIT_SUCCESS;
@@ -58,7 +58,7 @@ void allocMatrix(double ***matrix, const int n) {
     }
 
     for (int i = 0; i < n; i++) {
-        (*matrix)[i] = (double *) calloc(n + 1, sizeof(double));
+        (*matrix)[i] = (double *) calloc(n+1, sizeof(double));
         if ((*matrix)[i] == NULL) {
             printf("Erro ao alocar colunas da matriz.\n");
             exit(ALLOCATION_ERROR);
@@ -70,13 +70,13 @@ void printEquationSystem(double **matrix, const int n) {
     printf("\n");
     for (int i = 0; i < n; i++) {
         printf("{ ");
-        for (int j = 0; j < n - 1; j++) {
+        for (int j = 0; j < n; j++) {
             printf("(%6.2lf * x%d)", matrix[i][j], j + 1);
-            if (j < n - 2) {
+            if (j < n - 1) {
                 printf(" + ");
             }
         }
-        printf(" = %6.2lf", matrix[i][n - 1]); // termo independente
+        printf(" = %6.2lf", matrix[i][n]); // termo independente
         printf(" }\n");
     }
 }
@@ -98,11 +98,34 @@ void readUserInput(double **matrix, const int n) {
     for (int i = 0; i < n; i++) {
         printf("\nEquação %d:\n", i + 1);
 
-        for (int j = 0; j < n; j++) {
+        for (int j = 0; j < n+1; j++) {
             printEquationSystem(matrix, n);
             // Exibe a descrição de maneira mais compacta
             printf("\n  %s%d: ", (j == n - 1) ? "b_" : "Coeficiente de x_", j + 1);
             scanf("%lf", &matrix[i][j]);
+        }
+    }
+}
+
+void gaussElimination(double **matrix, const int n) {
+    for (int k = 1; k < n; k++) {
+        printf("\nPasso %d da eliminação de gauss...", k);
+        const int superiorLimit = n;
+        const int inferiorLimit = k + 1;
+        const double pivotElement = matrix[k-1][k-1];
+        printf(
+            "\ni >= %d | i <= %d | pivô (a_kk) = (a_%d%d) = %lf",
+            inferiorLimit,
+            superiorLimit,
+            k,
+            k,
+            pivotElement
+        );
+        for (int i = inferiorLimit; i <= superiorLimit; i++) {
+            const double lineMultiplier = matrix[i][k] / pivotElement;
+            for (int j = k; j <= n; j++) {
+                matrix[k][j] = matrix[k][j] - lineMultiplier * pivotElement;
+            }
         }
     }
 }
