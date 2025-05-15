@@ -120,37 +120,46 @@ void readUserInput(double **matrix, const int n) {
 void gaussElimination(double **matrix, const int n) {
     for (int k = 1; k < n; k++) {
         printf("\n\n### Passo %d da eliminação de gauss ###\n", k);
+
         const int superiorLimit = n;
         const int inferiorLimit = k + 1;
         // — 1 devido à indexação de vetores/matrizes começar em 0
         const double pivotElement = matrix[k-1][k-1];
+
         printf(
             "\nk = %d | i >= %d | i <= %d | pivô (a_kk) = (a_%d%d) = %lf\n",
-            k,
-            inferiorLimit,
-            superiorLimit,
-            k,
-            k,
-            pivotElement
+            k, inferiorLimit, superiorLimit, k, k, pivotElement
         );
+
         // A variável 'i' nesse caso indica a linha que está sendo acessada
         for (int i = inferiorLimit; i <= superiorLimit; i++) {
-            // — 1 devido à indexação de vetores/matrizes começar em 0
             const double lineMultiplier = matrix[i-1][k-1] / pivotElement;
             printf("\nm_%d%d = %.3lf\n", i, k, lineMultiplier);
+
             // A variável 'j' nesse caso indica a coluna que está sendo acessada
-            // O +1 na variável 'j' representa a indicação de que temos um termo independente na matriz aumentada
+            // O +1 na variável 'n' representa a indicação de que temos um termo independente na matriz aumentada
             for (int j = k; j <= n + 1; j++) {
                 const double oldValue = matrix[i-1][j-1];
                 const double newValue = oldValue - lineMultiplier * matrix[k-1][j-1];
 
                 // Usa ternário com snprintf para gerar a string label
                 char label[64];
-                j == n + 1 ? snprintf(label, sizeof(label), "b_%d = b_%d - (m_%d%d * b_%d) = ", i, i, i, k, k)
-                         : snprintf(label, sizeof(label), "a_%d%d = a_%d%d - (m_%d%d * a_%d%d) = ", i, j, i, j, i, k, k, j);
+                j == n + 1
+                    ? snprintf(
+                        label, sizeof(label),
+                        "b_%d = b_%d - (m_%d%d * b_%d) = ", i, i, i, k, k
+                    )
+                    : snprintf(
+                        label, sizeof(label),
+                        "a_%d%d = a_%d%d - (m_%d%d * a_%d%d) = ", i, j, i, j, i, k, k, j
+                    );
+
                 printf("%s", label);
 
-                printf("%.3lf - (%.3lf * %.3lf) = %.3lf\n", oldValue, lineMultiplier, matrix[k-1][j-1], newValue);
+                printf(
+                    "%.3lf - (%.3lf * %.3lf) = %.3lf\n",
+                    oldValue, lineMultiplier, matrix[k-1][j-1], newValue
+                );
 
                 matrix[i-1][j-1] = newValue;
             }
