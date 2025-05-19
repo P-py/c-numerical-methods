@@ -49,36 +49,53 @@ double calculatePolynomialWithX(
 );
 
 int main(void) {
-    const int polynomialDegree = getPolynomialDegree();
     int numberOfSubintervals;
     int *interval = NULL;
     double *xPoints = NULL;
     double *ptrCoefficients = NULL;
     int *ptrPowerNumbers = NULL;
-
-    // Aloca um ponteiro e armazena nele os valores das potências dos termos
-    allocAndStorePowers(&ptrPowerNumbers, polynomialDegree);
-
-    allocDouble(&ptrCoefficients, polynomialDegree);
-    storeBaseNumbers(ptrCoefficients, polynomialDegree);
-
-    // Mostra a função ao usuário
-    showFunction(ptrCoefficients, ptrPowerNumbers, polynomialDegree);
-
-    allocInt(&interval, INTERVAL_SIZE);
-    storeIntervalNumbers(interval, INTERVAL_SIZE);
+    int userOption;
 
     do {
-        printf("\nDigite o número de subdivisões: ");
-        scanf("%d", &numberOfSubintervals);
-    } while (numberOfSubintervals <= 0);
+        const int polynomialDegree = getPolynomialDegree();
 
-    applyTrapezoidalRule(interval, ptrCoefficients, ptrPowerNumbers, polynomialDegree, &xPoints, numberOfSubintervals);
+        // Aloca um ponteiro e armazena nele os valores das potências dos termos
+        allocAndStorePowers(&ptrPowerNumbers, polynomialDegree);
 
-    free(interval);
-    free(xPoints);
-    free(ptrCoefficients);
-    free(ptrPowerNumbers);
+        allocDouble(&ptrCoefficients, polynomialDegree+1);
+
+        storeBaseNumbers(ptrCoefficients, polynomialDegree);
+
+        // Mostra a função ao usuário
+        showFunction(ptrCoefficients, ptrPowerNumbers, polynomialDegree);
+
+        allocInt(&interval, INTERVAL_SIZE);
+        storeIntervalNumbers(interval, INTERVAL_SIZE);
+
+        do {
+            printf("\nDigite o número de subdivisões: ");
+            scanf("%d", &numberOfSubintervals);
+        } while (numberOfSubintervals <= 0);
+
+        applyTrapezoidalRule(
+            interval,
+            ptrCoefficients,
+            ptrPowerNumbers,
+            polynomialDegree,
+            &xPoints,
+            numberOfSubintervals
+        );
+
+        do {
+            printf("\nDeseja repetir o processo (1 - Sim | 2 - Nao)?\n->");
+            scanf("%d", &userOption);
+        } while (userOption != 1 && userOption != 2);
+
+        free(interval);
+        free(xPoints);
+        free(ptrCoefficients);
+        free(ptrPowerNumbers);
+    } while (userOption != 2);
 
     return EXIT_SUCCESS;
 }
@@ -95,8 +112,8 @@ int getPolynomialDegree() {
 }
 
 void allocDouble(double **ptr, const int size) {
-    if ((*ptr = (double*) realloc(*ptr, size*sizeof(double)))==NULL) {
-        printf("\nErro de alocacao.");
+    if ((*ptr = (double*) calloc(size, sizeof(double))) == NULL) {
+        fprintf(stderr, "\nErro de alocação.");
         exit(ALLOCATION_ERROR);
     }
 }
@@ -147,8 +164,11 @@ void showFunction(const double *ptrBaseNumbers, const int *ptrPowerNumbers, cons
     printf("\n");
 }
 
+// Aloca ou realoca dinamicamente um vetor de inteiros de tamanho 'size'.
+// O ponteiro fornecido é atualizado com o novo endereço de memória.
+// Encerra o programa com código de erro caso a alocação falhe.
 void allocInt(int **ptr, const int size) {
-    if ((*ptr = (int*) malloc(size*sizeof(int)))==NULL) {
+    if ((*ptr = (int*) calloc(size, sizeof(int)))==NULL) {
         printf("\nErro de alocacao.");
         exit(ALLOCATION_ERROR);
     }
