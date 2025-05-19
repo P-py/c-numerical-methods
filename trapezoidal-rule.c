@@ -22,14 +22,37 @@
 #define INVALID_ARGUMENT_ERROR 2
 #define ALLOCATION_ERROR 3
 
+#define INTERVAL_SIZE 2
+#define INTERVAL_START 0
+#define INTERVAL_END 1
+
 int getPolynomialDegree();
 void allocDouble(double **ptr, int size);
 void allocAndStorePowers(int **p, int functionDegree);
 void storeBaseNumbers(double *p, int functionDegree);
 void showFunction(const double *ptrBaseNumbers, const int *ptrPowerNumbers, int functionDegree);
+void allocInt(int **ptr, int size);
+void storeIntervalNumbers(int *p, int intervalSize);
+void applyTrapezoidalRule(
+    const int *interval,
+    const double *ptrCoefficients,
+    const int *ptrPowerNumbers,
+    int functionDegree,
+    double **xPoints,
+    int numberOfSubintervals
+);
+double calculatePolynomialWithX(
+    double xValue,
+    const double *ptrCoefficients,
+    const int *ptrPowerNumbers,
+    int functionDegree
+);
 
 int main(void) {
     const int polynomialDegree = getPolynomialDegree();
+    int numberOfSubintervals;
+    int *interval = NULL;
+    double *xPoints = NULL;
     double *ptrCoefficients = NULL;
     int *ptrPowerNumbers = NULL;
 
@@ -42,6 +65,18 @@ int main(void) {
     // Mostra a função ao usuário
     showFunction(ptrCoefficients, ptrPowerNumbers, polynomialDegree);
 
+    allocInt(&interval, INTERVAL_SIZE);
+    storeIntervalNumbers(interval, INTERVAL_SIZE);
+
+    do {
+        printf("\nDigite o número de subdivisões: ");
+        scanf("%d", &numberOfSubintervals);
+    } while (numberOfSubintervals <= 0);
+
+    applyTrapezoidalRule(interval, ptrCoefficients, ptrPowerNumbers, polynomialDegree, &xPoints, numberOfSubintervals);
+
+    free(interval);
+    free(xPoints);
     free(ptrCoefficients);
     free(ptrPowerNumbers);
 
@@ -110,4 +145,84 @@ void showFunction(const double *ptrBaseNumbers, const int *ptrPowerNumbers, cons
         }
     }
     printf("\n");
+}
+
+void allocInt(int **ptr, const int size) {
+    if ((*ptr = (int*) malloc(size*sizeof(int)))==NULL) {
+        printf("\nErro de alocacao.");
+        exit(ALLOCATION_ERROR);
+    }
+}
+
+void storeIntervalNumbers(int *p, const int intervalSize) {
+    for (int i = 0; i < intervalSize; i++) {
+        printf("\nDigite o valor do termo (%c | %d) do intervalo: ", 65+i, i);
+        scanf("%d", &p[i]);
+    }
+}
+
+void applyTrapezoidalRule(
+    const int *interval,
+    const double *ptrCoefficients,
+    const int *ptrPowerNumbers,
+    const int functionDegree,
+    double **xPoints,
+    const int numberOfSubintervals
+) {
+    const double integralStart = interval[INTERVAL_START];
+    const double integralEnd = interval[INTERVAL_END];
+    const double hSize = (integralEnd - integralStart)/numberOfSubintervals;
+    printf("\nValor de H = %.3lf", hSize);
+
+    allocDouble(xPoints, numberOfSubintervals+1);
+
+    for (int i = numberOfSubintervals; i >= 0; i--) {
+        (*xPoints)[i] = integralStart + i * hSize;
+        printf("\n\n(X_%d) = (%.3lf)", i, (*xPoints)[i]);
+    }
+
+    double numericalIntegrationResult = 0.0;
+
+    // Calcula f(x0) e f(xn)
+    numericalIntegrationResult += calculatePolynomialWithX(
+        (*xPoints)[0],
+        ptrCoefficients,
+        ptrPowerNumbers,
+        functionDegree
+    );
+    numericalIntegrationResult += calculatePolynomialWithX(
+        (*xPoints)[numberOfSubintervals],
+        ptrCoefficients,
+        ptrPowerNumbers,
+        functionDegree
+    );
+
+    // Soma 2*f(xi) para os pontos intermediários
+    for (int i = 1; i < numberOfSubintervals; i++) {
+        numericalIntegrationResult += 2 * calculatePolynomialWithX(
+            (*xPoints)[i],
+            ptrCoefficients,
+            ptrPowerNumbers,
+            functionDegree
+        );
+    }
+
+    // Multiplica por h/2
+    numericalIntegrationResult *= hSize / 2.0;
+
+    printf("\n\nResultado da integração numérica: %.6lf\n", numericalIntegrationResult);
+}
+
+// Função que calcula o valor do polinômio em um ponto x
+double calculatePolynomialWithX(
+    const double xValue,
+    const double *ptrCoefficients,
+    const int *ptrPowerNumbers,
+    const int functionDegree
+) {
+    double result = 0.0;
+    for (int i = 0; i <= functionDegree; i++) {
+        result += ptrCoefficients[i] * pow(xValue, ptrPowerNumbers[i]);
+    }
+    return result;
 }
