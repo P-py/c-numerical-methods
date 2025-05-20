@@ -22,10 +22,13 @@
 #define INVALID_ARGUMENT_ERROR 2
 #define ALLOCATION_ERROR 3
 
-#define INTERVAL_SIZE 2
-#define INTERVAL_START 0
-#define INTERVAL_END 1
+// Constantes auxiliares para facilitar alocação e acesso aos valores
+#define INTERVAL_SIZE 2 // Define de forma constante o tamanho do intervalo
+#define INTERVAL_START 0 // Constante para acesso ao primeiro termo do intervalo
+#define INTERVAL_END 1 // Constante para acesso ao segundo termo do intervalo
 
+// Definição dos protótipos de funções utilizadas dentro da main
+// A necessidade da declaração a aqui se dá para evitar que seja necessário definir as funções completas antes da main
 int getPolynomialDegree();
 void allocDouble(double **ptr, int size);
 void allocAndStorePowers(int **p, int functionDegree);
@@ -48,35 +51,43 @@ double calculatePolynomialWithX(
     int functionDegree
 );
 
+// Escopo principal do programa
 int main(void) {
-    int numberOfSubintervals;
-    int *interval = NULL;
-    double *xPoints = NULL;
-    double *ptrCoefficients = NULL;
-    int *ptrPowerNumbers = NULL;
-    int userOption;
+    int numberOfSubintervals;       // Número de subdivisões do intervalo (determinado pelo usuário)
+    int *interval = NULL;           // Ponteiro para alocar dinamicamente o intervalo de integração [a, b]
+    double *xPoints = NULL;         // Pontos de divisão do intervalo, determinado pelo número de subdivisões
+    double *ptrCoefficients = NULL; // Coeficientes do polinômio inseridos pelo usuário
+    int *ptrPowerNumbers = NULL;    // Expoentes do polinômio, determinados com base no grau da função
+    int userOption;                 // Controle de repetição
 
+    // Loop que abre a possibilidade de repetição do cálculo para o usuário
     do {
+        // Lê o grau do polinômio que será informado pelo usuário
         const int polynomialDegree = getPolynomialDegree();
 
         // Aloca um ponteiro e armazena nele os valores das potências dos termos
         allocAndStorePowers(&ptrPowerNumbers, polynomialDegree);
 
+        // Aloca espaço para os coeficientes
         allocDouble(&ptrCoefficients, polynomialDegree+1);
 
+        // Solicita ao usuário os coeficientes do polinômio
         storeBaseNumbers(ptrCoefficients, polynomialDegree);
 
-        // Mostra a função ao usuário
+        // Mostra a função para o usuário
         showFunction(ptrCoefficients, ptrPowerNumbers, polynomialDegree);
 
+        // Aloca e lê os limites do intervalo [a, b]
         allocInt(&interval, INTERVAL_SIZE);
         storeIntervalNumbers(interval, INTERVAL_SIZE);
 
+        // Solicita o número de subdivisões, garantindo valor positivo
         do {
             printf("\nDigite o número de subdivisões: ");
             scanf("%d", &numberOfSubintervals);
         } while (numberOfSubintervals <= 0);
 
+        // Aplica a Regra dos Trapézios
         applyTrapezoidalRule(
             interval,
             ptrCoefficients,
@@ -86,20 +97,25 @@ int main(void) {
             numberOfSubintervals
         );
 
+        // Pergunta se o usuário deseja repetir o processo
         do {
             printf("\nDeseja repetir o processo (1 - Sim | 2 - Nao)?\n->");
             scanf("%d", &userOption);
         } while (userOption != 1 && userOption != 2);
 
+        // Liberação de memória alocada
+        // Evita que lixo de memória afete os cálculos seguintes
+        // Deve ser feita no final do programa como boa prática clang-tidy
         free(interval);
         free(xPoints);
         free(ptrCoefficients);
         free(ptrPowerNumbers);
-    } while (userOption != 2);
+    } while (userOption != 2); // Repete ou não, com base na escolha do usuário
 
     return EXIT_SUCCESS;
 }
 
+// Solicita e retorna o grau do polinômio (deve ser > 0)
 int getPolynomialDegree() {
     int degree;
 
@@ -111,6 +127,7 @@ int getPolynomialDegree() {
     return degree;
 }
 
+// Aloca vetor de double com tamanho 'size'
 void allocDouble(double **ptr, const int size) {
     if ((*ptr = (double*) calloc(size, sizeof(double))) == NULL) {
         fprintf(stderr, "\nErro de alocação.");
@@ -174,6 +191,7 @@ void allocInt(int **ptr, const int size) {
     }
 }
 
+// Solicita os dois valores que definem o intervalo [a, b]
 void storeIntervalNumbers(int *p, const int intervalSize) {
     for (int i = 0; i < intervalSize; i++) {
         printf("\nDigite o valor do termo (%c | %d) do intervalo: ", 65+i, i);
@@ -181,6 +199,7 @@ void storeIntervalNumbers(int *p, const int intervalSize) {
     }
 }
 
+// Aplica a Regra dos Trapézios para calcular a integral aproximada
 void applyTrapezoidalRule(
     const int *interval,
     const double *ptrCoefficients,
@@ -189,13 +208,18 @@ void applyTrapezoidalRule(
     double **xPoints,
     const int numberOfSubintervals
 ) {
+    // Aqui são criadas variáveis para guardar o início da integral e o seu fim
+    // Calculamos também o tamanho de H, que define o intervalo entre cada ponto X da
+    // Regra dos Trapézios Repetida
     const double integralStart = interval[INTERVAL_START];
     const double integralEnd = interval[INTERVAL_END];
     const double hSize = (integralEnd - integralStart)/numberOfSubintervals;
     printf("\nValor de H = %.3lf", hSize);
 
+    // Aloca memória para armazenar os pontos X com base na quantidade de 'subintervalos'
     allocDouble(xPoints, numberOfSubintervals+1);
 
+    // Calcula o valor de cada ponto entre Xi e Xf com base no valor de H e na quantidade de intervalos
     for (int i = numberOfSubintervals; i >= 0; i--) {
         (*xPoints)[i] = integralStart + i * hSize;
         printf("\n\n(X_%d) = (%.3lf)", i, (*xPoints)[i]);
@@ -233,7 +257,7 @@ void applyTrapezoidalRule(
     printf("\n\nResultado da integração numérica: %.6lf\n", numericalIntegrationResult);
 }
 
-// Função que calcula o valor do polinômio em um ponto x
+// Função que calcula o valor do polinômio em um determinado ponto x
 double calculatePolynomialWithX(
     const double xValue,
     const double *ptrCoefficients,
